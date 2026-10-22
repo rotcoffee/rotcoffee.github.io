@@ -1,0 +1,1142 @@
+<!doctype html>
+<html lang="ko" data-register="blueprint">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>부팅 후 첫 연결 실패, 원인은 바이트 하나</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230f172a'/%3E%3Cpath d='M18 40V24l14-8 14 8v16l-14 8-14-8Z' fill='none' stroke='%23fbbf24' stroke-width='4' stroke-linejoin='round'/%3E%3Ccircle cx='32' cy='32' r='5' fill='%2338bdf8'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style data-ve-kit>
+/* visual-explainer kit. The renderer inlines this file at <link rel="stylesheet" data-ve-kit>.
+   Tokens sit in :where(), so a page's own :root rules (topic motif, a named palette) always win.
+   A page picks its register with <html data-register="instrument|blueprint|paper|editorial">; Instrument is the default. */
+
+/* scale, shared by every register */
+:where(:root) {
+  color-scheme: light dark;
+  --t-label: .75rem; --t-small: .875rem; --t-body: 1rem; --t-lead: 1.25rem; --t-h2: 1.625rem; --t-h1: clamp(2.25rem, 5.5vw, 4rem);
+  --s-1: .25rem; --s-2: .5rem; --s-3: .75rem; --s-4: 1rem; --s-5: 1.5rem; --s-6: 2rem; --s-7: 3rem; --s-8: 4.5rem;
+  --r-1: 4px; --r-2: 10px;
+  --ease: cubic-bezier(.16,1,.3,1); --fast: 150ms; --med: 300ms; --slow: 500ms;
+}
+
+/* Instrument (default): Geist, near-black and amber; dark first */
+:where(:root) {
+  --bg: #0b0d0c; --surface: #121614; --border: #1f2522; --border-bright: #5e6662;
+  --text: #e6ebe8; --text-dim: #919d97; --accent: #f2a93b; --accent-dim: rgba(242,169,59,.14);
+  --ok: #6fcf97; --warn: #e8c547; --risk: #ef6f5c; --info: #6cb6e0;
+  --node-top: color-mix(in srgb, var(--text) 7%, var(--surface)); --lift: rgb(0 0 0 / .45); --halo: 32%;
+  --font-body: 'Geist', 'Segoe UI', sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, monospace;
+  --font-display: var(--font-body); --display-weight: 600;
+  --stage: radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--text) 13%, transparent) 1px, transparent 1.5px) 0 0 / 20px 20px;
+}
+@media (prefers-color-scheme: light) {
+  :where(:root) {
+    --bg: #f4f5f3; --surface: #ffffff; --border: #dfe3e0; --border-bright: #888e8b;
+    --text: #121614; --text-dim: #545e59; --accent: #955700; --accent-dim: rgba(149,87,0,.12);
+    --ok: #1c7443; --warn: #7a5e00; --risk: #b0341e; --info: #1a6890;
+    --node-top: var(--surface); --lift: rgb(18 22 20 / .12); --halo: 22%;
+  }
+}
+
+/* Blueprint: IBM Plex, blue-black, a 24px line grid on the stage, r-1 everywhere; dark first */
+:where(:root[data-register="blueprint"]) {
+  --bg: #0d1520; --surface: #132031; --border: #22324a; --border-bright: #596b87;
+  --text: #e3ecf5; --text-dim: #92a6bb; --accent: #ffb547; --accent-dim: rgba(255,181,71,.14);
+  --ok: #6fd3a0; --warn: #e8d36a; --risk: #ff7b6b; --info: #7cc0f0;
+  --font-body: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --r-2: 4px;
+  --stage: linear-gradient(color-mix(in srgb, var(--border) 55%, transparent) 1px, transparent 1px) 0 0 / 24px 24px, linear-gradient(90deg, color-mix(in srgb, var(--border) 55%, transparent) 1px, transparent 1px) 0 0 / 24px 24px;
+}
+@media (prefers-color-scheme: light) {
+  :where(:root[data-register="blueprint"]) {
+    --bg: #f2f6fa; --surface: #ffffff; --border: #d6e0ea; --border-bright: #818f9e;
+    --text: #0f1a26; --text-dim: #4d6074; --accent: #a34700; --accent-dim: rgba(163,71,0,.12);
+    --ok: #1c7443; --warn: #776300; --risk: #b0341e; --info: #145f99;
+  }
+}
+
+/* Paper: Newsreader headings over Atkinson Hyperlegible, ink blue; light first */
+:where(:root[data-register="paper"]) {
+  --bg: #f7f7f4; --surface: #ffffff; --border: #e3e3dc; --border-bright: #8e8e8a;
+  --text: #17191c; --text-dim: #575c63; --accent: #2c4cd0; --accent-dim: rgba(44,76,208,.12);
+  --ok: #1d7443; --warn: #836000; --risk: #b3301d; --info: #1b6a94;
+  --node-top: var(--surface); --lift: rgb(18 22 20 / .12); --halo: 22%;
+  --font-body: 'Atkinson Hyperlegible Next', 'Segoe UI', sans-serif;
+  --font-mono: 'Atkinson Hyperlegible Mono', ui-monospace, monospace;
+  --font-display: 'Newsreader', Georgia, serif; --display-weight: 500;
+}
+@media (prefers-color-scheme: dark) {
+  :where(:root[data-register="paper"]) {
+    --bg: #111316; --surface: #181b1f; --border: #262a30; --border-bright: #62676c;
+    --text: #e8e8e3; --text-dim: #9ba1a9; --accent: #93a6ff; --accent-dim: rgba(147,166,255,.14);
+    --ok: #6cc492; --warn: #e3b94d; --risk: #f0806b; --info: #6fb8dc;
+    --node-top: color-mix(in srgb, var(--text) 7%, var(--surface)); --lift: rgb(0 0 0 / .45); --halo: 32%;
+  }
+}
+
+/* Editorial: Instrument Serif display over Instrument Sans; light first */
+:where(:root[data-register="editorial"]) {
+  --bg: #fbfbf9; --surface: #f1f0ec; --border: #e2e0da; --border-bright: #8c8a85;
+  --text: #111111; --text-dim: #5a5853; --accent: #cc3418; --accent-dim: rgba(204,52,24,.12);
+  --ok: #1d7443; --warn: #836000; --risk: #a01d48; --info: #1b6a94;
+  --node-top: var(--surface); --lift: rgb(18 22 20 / .12); --halo: 22%;
+  --font-body: 'Instrument Sans', 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-display: 'Instrument Serif', Georgia, serif; --display-weight: 400;
+}
+@media (prefers-color-scheme: dark) {
+  :where(:root[data-register="editorial"]) {
+    --bg: #0f0f0f; --surface: #1a1a19; --border: #2b2a28; --border-bright: #696763;
+    --text: #f2f0eb; --text-dim: #a4a19b; --accent: #ff6e50; --accent-dim: rgba(255,110,80,.14);
+    --ok: #6cc492; --warn: #e3b94d; --risk: #f57fa2; --info: #7cb8e8;
+    --node-top: color-mix(in srgb, var(--text) 7%, var(--surface)); --lift: rgb(0 0 0 / .45); --halo: 32%;
+  }
+}
+
+/* base */
+html { font-size: 17px; }
+* { box-sizing: border-box; margin: 0; }
+body { background: var(--bg); color: var(--text); font: 400 var(--t-body)/1.6 var(--font-body); text-wrap: pretty; font-kerning: normal; font-synthesis: none; -webkit-font-smoothing: antialiased; }
+::selection { background: var(--accent-dim); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+main { max-width: 64rem; margin: 0 auto; padding: var(--s-8) var(--s-5); display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-8); }
+section, figure, header { min-width: 0; }
+header { display: grid; gap: var(--s-4); }
+header + figure { margin-top: calc(var(--s-6) - var(--s-8)); }
+/* text-box trims to cap height and baseline, so gaps are measured from the letters, not the line box */
+h1, h2, .kpi .val { text-box: trim-both cap alphabetic; }
+h1 { font-size: var(--t-h1); line-height: 1.05; font-family: var(--font-display); font-weight: var(--display-weight); letter-spacing: -.035em; text-wrap: balance; max-width: 16ch; margin-bottom: var(--s-2); }
+h1 .num { color: var(--accent); font-variant-numeric: tabular-nums; }
+h2 { font-size: var(--t-h2); line-height: 1.2; font-family: var(--font-display); font-weight: var(--display-weight); letter-spacing: -.015em; text-wrap: balance; }
+/* section opener: hairline, mono label in columns 1–3, h2 in 4–12, on one baseline */
+.sec-head { display: grid; gap: var(--s-3) var(--s-5); align-items: baseline; border-top: 1px solid var(--border); padding-top: var(--s-5); margin-bottom: var(--s-6); }
+@media (min-width: 52rem) { .sec-head { grid-template-columns: 3fr 9fr; } }
+/* the other opener, a bare label above the h2, gets the same gaps, so the h2 never sits on the figure below */
+section > .ve-label:has(+ h2) { margin-bottom: var(--s-3); }
+section > h2 { margin-bottom: var(--s-6); }
+h3 { font-size: var(--t-body); line-height: 1.3; font-weight: 600; }
+.eyebrow { display: flex; align-items: center; gap: var(--s-2); font: 600 var(--t-label) var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.eyebrow::before { content: ''; width: 1.25rem; height: 2px; background: currentColor; }
+.ve-label { font: 500 var(--t-label) var(--font-mono); color: var(--text-dim); }
+.caps { text-transform: uppercase; letter-spacing: .08em; font-weight: 600; color: var(--text); }
+.lead { font-size: var(--t-lead); line-height: 1.5; color: var(--text-dim); max-width: 44ch; }
+.lead b { color: var(--text); font-weight: 600; }
+.meta { font: 500 var(--t-label) var(--font-mono); color: var(--text-dim); font-variant-numeric: tabular-nums; }
+.unit { font-size: .5em; font-weight: 500; color: var(--text-dim); letter-spacing: 0; }
+code { font: .875em var(--font-mono); font-variant-ligatures: none; }
+
+/* figure: the stage is a faint dot grid, so nodes read as objects placed on it */
+.frame { background: var(--stage), var(--bg); border: 1px solid var(--border); border-radius: var(--r-2); padding: var(--s-5); overflow-x: auto; }
+figcaption { font-size: var(--t-body); color: var(--text-dim); margin-top: var(--s-3); max-width: 65ch; }
+.fig-n { font: 600 var(--t-label) var(--font-mono); color: var(--text); margin-right: var(--s-2); }
+
+/* diagram kit (references/diagrams.md) */
+/* min-width keeps 14-unit labels >= 12px as rendered; narrow screens scroll the frame instead. kit/render.mjs sets --ve-min for a viewBox wider than 816. */
+.ve-svg { width: 100%; min-width: var(--ve-min, 700px); height: auto; display: block; font: 500 17px var(--font-body); }
+.ve-n .sh { fill: url(#ve-node); stroke: var(--border-bright); stroke-width: 1.5; filter: drop-shadow(0 6px 14px var(--lift)); transition: stroke var(--fast) var(--ease), opacity var(--med) var(--ease); }
+.ve-n .lid { fill: var(--node-top); }
+.ve-n.is-key .sh { fill: color-mix(in srgb, var(--accent) 11%, var(--surface)); stroke: var(--accent); stroke-width: 2; filter: drop-shadow(0 0 16px color-mix(in srgb, var(--accent) var(--halo), transparent)); }
+.ve-n text { fill: var(--text); text-anchor: middle; dominant-baseline: central; font-weight: 600; }
+.ve-n .sub { fill: var(--text-dim); font: 500 14px var(--font-mono); }
+.ve-n .gl { fill: none; stroke: var(--text-dim); stroke-width: 1.5; stroke-linejoin: round; }
+.ve-n .ve-kind { fill: var(--text-dim); font: 600 14px var(--font-mono); letter-spacing: .08em; text-transform: uppercase; }
+.ve-n.is-key .gl { stroke: var(--accent); }
+.ve-e { fill: none; stroke: var(--text-dim); stroke-width: 1.75; marker-end: url(#ve-ah); }
+.ve-e.is-hot { stroke: var(--accent); stroke-width: 2.75; filter: drop-shadow(0 0 5px color-mix(in srgb, var(--accent) 55%, transparent)); }
+.ve-e.is-async { stroke-dasharray: 6 5; }
+.ve-el { fill: var(--text-dim); font: 500 14px var(--font-mono); text-anchor: middle; paint-order: stroke; stroke: var(--bg); stroke-width: 5px; stroke-linejoin: round; }
+.ve-el.l { text-anchor: end; } .ve-el.r { text-anchor: start; }
+/* a dashed boundary around a group, with a mono tag in its corner */
+.ve-bnd { fill: none; stroke: var(--border-bright); stroke-width: 1; stroke-dasharray: 6 5; }
+.ve-bnd-t { fill: var(--text-dim); font: 600 14px var(--font-mono); letter-spacing: .08em; text-transform: uppercase; }
+/* a slot in a queue or worker pool; .is-on fills it (.on is the stepper's) */
+.ve-slot { fill: var(--surface); stroke: var(--border-bright); stroke-width: 1.25; }
+.ve-slot.is-on { fill: var(--accent-dim); stroke: var(--accent); stroke-width: 1.75; }
+/* chart axes and ticks, and their labels */
+.ve-axis { fill: none; stroke: var(--border-bright); stroke-width: 1; }
+.ve-axis-t { fill: var(--text-dim); font: 500 14px var(--font-mono); text-anchor: middle; font-variant-numeric: tabular-nums; }
+/* <ve-flow> on a page: its labels stay at 12 px or more, and a small drawing grows no more than 1.3× (kit/flow.mjs sets both) */
+.ve-svg.ve-flow { min-width: var(--min); max-width: var(--max); }
+/* flags on <ve-flow> parts: new, gone (an arrow also gets ✕) */
+.ve-n.is-new .sh { stroke: var(--ok); stroke-dasharray: 6 4; }
+.ve-n.is-gone .sh { stroke: var(--risk); stroke-dasharray: 3 4; opacity: .7; }
+.ve-n.is-gone text { text-decoration: line-through; }
+.ve-e.is-new { stroke: var(--ok); }
+.ve-e.is-gone { stroke: var(--risk); stroke-dasharray: 3 4; }
+.ve-x { fill: var(--risk); font: 600 16px var(--font-mono); text-anchor: middle; dominant-baseline: central; paint-order: stroke; stroke: var(--surface); stroke-width: 5px; }
+/* <ve-stack>: one bar split in proportion; labels under their segments */
+.ve-stack rect { fill: color-mix(in srgb, var(--text) 9%, var(--surface)); stroke: var(--border-bright); stroke-width: 1.5; }
+.ve-stack rect.hot { fill: var(--accent-dim); stroke: var(--accent); }
+.ve-stack text { fill: var(--text-dim); font: 500 14px var(--font-mono); text-anchor: middle; dominant-baseline: central; }
+
+/* numbered callouts and edge numbers (references/diagrams.md): .now fills the current one; .q keeps an edge number quiet until its step */
+.ve-co circle { fill: var(--surface); stroke: var(--accent); stroke-width: 1.75; }
+.ve-co text { fill: var(--accent); font: 600 14px var(--font-mono); text-anchor: middle; dominant-baseline: central; }
+.ve-co.now circle { fill: var(--accent); } .ve-co.now text { fill: var(--surface); }
+.ve-co.q circle { stroke: var(--border-bright); } .ve-co.q text { fill: var(--text-dim); }
+.ve-co.q.now circle { fill: var(--accent); stroke: var(--accent); } .ve-co.q.now text { fill: var(--surface); }
+
+/* dimension lines (references/diagrams.md) */
+.ve-dim path { fill: none; stroke-width: 1; } .ve-dim .ext { stroke: var(--border-bright); } .ve-dim .ln { stroke: var(--text-dim); }
+.ve-dim text { fill: var(--text); font: 500 14px var(--font-mono); text-anchor: middle; }
+.ve-dim.is-key .ln { stroke: var(--accent); } .ve-dim.is-key text { fill: var(--accent); }
+
+/* flow dots: they travel under the nodes, so a dot enters a box and leaves from the far side */
+[data-flow] { fill: none; stroke: none; }
+.ve-dots circle { fill: var(--text); }
+.ve-dots .hit { fill: var(--accent); filter: drop-shadow(0 0 4px var(--accent)); }
+.ve-steps:not(.is-full) .ve-dots { display: none; }
+
+/* linked highlighting: same data-ref lights up together */
+/* Dim shapes, never text below 4.5:1: unlit labels drop to --text-dim instead of fading. */
+.ve-ref { text-decoration: underline dotted var(--text-dim) 1px; text-underline-offset: .22em; border-radius: var(--r-1); transition: background var(--fast) var(--ease); }
+.ve-ref.is-lit { background: var(--accent-dim); text-decoration-color: var(--accent); }
+svg [data-ref] { transition: opacity var(--med) var(--ease); }
+svg.has-lit path[data-ref]:not(.is-lit), svg.has-lit g[data-ref]:not(.is-lit) .sh { opacity: .25; }
+svg.has-lit g[data-ref]:not(.is-lit) text, svg.has-lit text[data-ref]:not(.is-lit) { fill: var(--text-dim); }
+.ve-n.is-lit .sh { stroke: var(--accent); }
+.ve-e.is-lit { stroke: var(--accent); }
+.ve-el.is-lit { fill: var(--text); }
+.case.is-lit { border-color: var(--accent); }
+
+/* stepper / scene player */
+/* Future steps: shapes stay as a faint outline; their labels are hidden, not faded to an unreadable gray. */
+.ve-steps [data-s] { transition: opacity var(--slow) var(--ease), stroke-dashoffset var(--slow) var(--ease); }
+.ve-steps [data-s]:not(.on) { opacity: .15; }
+.ve-steps g[data-s]:not(.on) text, .ve-steps text[data-s]:not(.on) { opacity: 0; }
+.ve-steps path[pathLength][data-s] { stroke-dasharray: 1; stroke-dashoffset: 1; }
+.ve-steps path[pathLength][data-s].on { stroke-dashoffset: 0; }
+.ve-steps .ve-n.now > .sh { stroke: var(--accent); }
+/* replay: the edges that fired light until the full picture, and each token runs its path once, after --d; edges and nodes still show the step without tokens */
+.ve-steps:not(.is-full) .ve-e.now { stroke: var(--accent); stroke-width: 2.75; }
+.ve-tok { fill: var(--accent); visibility: hidden; }
+.ve-steps:not(.is-still) .ve-tok.now { visibility: visible; animation: ve-run var(--dur, 900ms) ease-in-out var(--d, 0ms) both; }
+@keyframes ve-run { from { offset-distance: 0%; opacity: 0; } 10%, 75% { opacity: 1; } to { offset-distance: 100%; opacity: 0; } }
+/* a part that comes and goes (a queued job, a busy slot): shown only on the steps its data-s lists, arriving after --d */
+.ve-steps .ve-at { transition: opacity var(--med) var(--ease); }
+.ve-steps .ve-at:not(.now) { opacity: 0; }
+.ve-steps .ve-at.now { transition-delay: var(--d, 0ms); }
+/* a changing value: one text per step at one spot; the latest step's shows, swapped without a crossfade */
+.ve-steps .ve-vals text { transition: none; }
+.ve-vals text.on:has(~ text.on) { opacity: 0; }
+.ve-player { display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto; align-items: center; gap: var(--s-2) var(--s-3); margin-top: var(--s-4); }
+.ve-cap { grid-column: 1 / -1; list-style: none; padding: 0; min-height: 3.2em; }
+.ve-cap li::before { content: attr(data-n); font: 600 var(--t-label) var(--font-mono); color: var(--accent); margin-right: var(--s-3); font-variant-numeric: tabular-nums; }
+.ve-player input { accent-color: var(--accent); min-width: 0; }
+button { font: 500 var(--t-small) var(--font-mono); color: var(--text); background: var(--surface); border: 1px solid var(--border-bright); border-radius: var(--r-1); padding: var(--s-2) var(--s-3); cursor: pointer; transition: border-color var(--fast) var(--ease); }
+button:hover, button:focus-visible { border-color: var(--accent); }
+
+/* KPI strip: one frame, cells split by hairlines, each number with its picture. Flex, so a wrapped last row stretches instead of leaving an empty gray cell. */
+.kpis { display: flex; flex-wrap: wrap; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--r-2); overflow: hidden; }
+.kpi { flex: 1 1 14rem; background: var(--surface); padding: var(--s-5); display: grid; grid-template-rows: auto auto 1fr; gap: var(--s-3); min-width: 0; }
+.kpi .val { font: 600 2.75rem/1 var(--font-body); font-variant-numeric: tabular-nums; letter-spacing: -.04em; }
+.ve-waffle { align-self: end; width: 11rem; height: auto; font: 500 13px var(--font-mono); overflow: visible; }
+.ve-waffle text { fill: var(--text-dim); dominant-baseline: central; }
+.ann { fill: none; stroke: var(--text-dim); stroke-width: 1; }
+.ve-bars { align-self: end; width: 100%; max-width: 16rem; height: auto; font: 500 13px var(--font-mono); overflow: visible; }
+.ve-bars text { fill: var(--text-dim); dominant-baseline: central; }
+.ve-bars rect { fill: var(--border-bright); transform-box: fill-box; transform-origin: left; transition: transform 900ms var(--ease) 150ms; }
+.ve-bars .hot { fill: var(--accent); }
+.ve-bars .hot + text { fill: var(--text); }
+
+/* small multiples: one mini diagram per case; the changed part takes the case's status color */
+.cases { display: grid; grid-template-columns: repeat(auto-fit, minmax(14.5rem, 1fr)); gap: var(--s-4); }
+.case { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-2); padding: var(--s-4); display: grid; gap: var(--s-3); align-content: start; transition: border-color var(--fast) var(--ease); }
+.case[data-st=ok] { --st: var(--ok); } .case[data-st=warn] { --st: var(--warn); } .case[data-st=risk] { --st: var(--risk); }
+.ve-mini { width: 100%; height: auto; font: 600 15px var(--font-body); }
+.ve-mini .ve-n .sh { filter: none; }
+/* a .cases column is never under 14.5rem, so a mini is ≥ 211 px and 14 units render ≥ 12.3 px */
+.ve-mini .ve-n .sub { font-size: 14px; }
+.ve-mini .is-st.ve-e { stroke: var(--st); stroke-width: 2.75; }
+.ve-mini .is-st .sh { stroke: var(--st); stroke-width: 2; }
+.ve-mini .is-st .sub { fill: var(--st); }
+.ve-mini .is-off { stroke-dasharray: 5 4; }
+.ve-mini .ve-e.is-off { opacity: .35; }
+
+/* chips */
+.chip { display: inline-flex; align-items: center; gap: var(--s-2); font: 600 var(--t-label) var(--font-mono); padding: 2px var(--s-2); border: 1px solid currentColor; border-radius: var(--r-1); white-space: nowrap; justify-self: start; }
+.chip::before { content: ''; width: .5rem; height: .5rem; background: currentColor; }
+.chip.ok { color: var(--ok); } .chip.ok::before { border-radius: 50%; }
+.chip.warn { color: var(--warn); } .chip.warn::before { clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+.chip.risk { color: var(--risk); }
+
+/* a table: a scroll frame, the header in the label style, row rules only; .num cells are right-aligned numbers */
+.ve-table { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--r-2); }
+.ve-table table { border-collapse: collapse; width: 100%; font-size: var(--t-body); font-variant-numeric: tabular-nums; }
+.ve-table th, .ve-table td { padding: var(--s-3) var(--s-4); text-align: left; vertical-align: top; border-bottom: 1px solid var(--border); }
+.ve-table thead th { background: var(--surface); font: 600 var(--t-label)/1.3 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--text-dim); }
+.ve-table tbody th { font-weight: 600; }
+.ve-table tbody tr:last-child > * { border-bottom: 0; }
+.ve-table .num { text-align: right; font-family: var(--font-mono); }
+.ve-table td small { display: block; color: var(--text-dim); font-size: var(--t-small); }
+
+details { border-top: 1px solid var(--border); padding-top: var(--s-4); color: var(--text-dim); font-size: var(--t-body); }
+summary { cursor: pointer; font: 500 var(--t-label) var(--font-mono); margin-bottom: var(--s-2); }
+/* sources stay visible: readers check them without hunting for a toggle */
+.sources { border-top: 1px solid var(--border); padding-top: var(--s-4); display: grid; gap: var(--s-2); }
+
+/* entrance: blocks rise in once; bars grow as their block arrives (JS adds .js-motion only when motion is allowed) */
+.js-motion main > * { transition: opacity var(--slow) var(--ease), transform var(--slow) var(--ease); }
+.js-motion main > :not(.in) { opacity: 0; transform: translateY(1rem); }
+.js-motion main > :not(.in) .ve-bars rect { transform: scaleX(0); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } .ve-tok { display: none; } }
+
+@media print {
+  /* Print uses the register's light foregrounds on white, every step fully drawn, and no effects. */
+  :where(:root) { --bg: #fff; --surface: #fff; --border: #dfe3e0; --border-bright: #888e8b; --text: #121614; --text-dim: #545e59; --accent: #955700; --ok: #1c7443; --warn: #7a5e00; --risk: #b0341e; --info: #1a6890; --node-top: #fff; }
+  :where(:root[data-register="blueprint"]) { --border: #d6e0ea; --border-bright: #818f9e; --text: #0f1a26; --text-dim: #4d6074; --accent: #a34700; --warn: #776300; --info: #145f99; }
+  :where(:root[data-register="paper"]) { --border: #e3e3dc; --border-bright: #8e8e8a; --text: #17191c; --text-dim: #575c63; --accent: #2c4cd0; --ok: #1d7443; --warn: #836000; --risk: #b3301d; --info: #1b6a94; }
+  :where(:root[data-register="editorial"]) { --border: #e2e0da; --border-bright: #8c8a85; --text: #111111; --text-dim: #5a5853; --accent: #cc3418; --ok: #1d7443; --warn: #836000; --risk: #a01d48; --info: #1b6a94; }
+  .ve-player button, .ve-player input, .ve-dots { display: none; }
+  .frame { overflow: visible; background: #fff; } .ve-svg, .ve-svg.ve-flow { min-width: 0; }
+  .frame, .case, .kpi { break-inside: avoid; } h2 { break-after: avoid; }
+  svg * { filter: none !important; }
+  .js-motion main > * { opacity: 1 !important; transform: none !important; }
+  .js-motion .ve-bars rect { transform: none !important; }
+  .ve-steps [data-s]:not(.on), .ve-steps g[data-s]:not(.on) text, .ve-steps text[data-s]:not(.on) { opacity: 1; }
+  .ve-steps .ve-at:not(.now) { opacity: 0; }
+  .ve-steps path[pathLength][data-s] { stroke-dashoffset: 0; }
+  .ve-tok, .ve-vals text:not(:last-child) { display: none; }
+}
+</style>
+<style>
+:root{
+  --font-body:"IBM Plex Sans KR","IBM Plex Sans",sans-serif;
+  --font-display:"IBM Plex Sans KR","IBM Plex Sans",sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+.ve-svg text,svg text{font-family:var(--font-body)}
+svg text.mono{font-family:var(--font-mono)}
+
+.page{display:grid;grid-template-columns:200px minmax(0,1fr);gap:var(--s-6);align-items:start}
+nav.toc{position:sticky;top:var(--s-4);align-self:start;font-size:var(--t-small);line-height:1.5}
+nav.toc ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+nav.toc a{display:block;padding:4px 10px;border-radius:var(--r-1);color:var(--text-dim);text-decoration:none;border-left:2px solid transparent}
+nav.toc a:hover{color:var(--text)}
+nav.toc a[aria-current="true"]{color:var(--text);border-left-color:var(--accent);background:var(--surface)}
+nav.toc .tn{display:inline-block;width:1.4em;color:var(--text-dim);font-variant-numeric:tabular-nums}
+main section{scroll-margin-top:var(--s-4)}
+@media(max-width:1000px){
+  .page{display:block}
+  nav.toc{position:sticky;top:0;z-index:5;background:var(--bg);margin:0 0 var(--s-5);padding:var(--s-2) 0;border-bottom:1px solid var(--border)}
+  nav.toc ol{flex-direction:row;gap:4px;overflow-x:auto;scrollbar-width:none;mask-image:linear-gradient(90deg,#000 88%,transparent);-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent)}
+  nav.toc ol::-webkit-scrollbar{display:none}
+  nav.toc a{white-space:nowrap;border-left:none;border-bottom:2px solid transparent;padding:4px 8px}
+  nav.toc a[aria-current="true"]{border-left:none;border-bottom-color:var(--accent)}
+  nav.toc .tn{width:auto;margin-right:.3em}
+  main section{scroll-margin-top:52px}
+}
+
+.box{fill:var(--surface);stroke:var(--border-bright);stroke-width:1.5}
+.box.key{stroke:var(--accent);stroke-width:2.5}
+.box.bad{stroke:var(--risk)}
+.bt{fill:var(--text);font-size:14px;font-weight:600}
+.bs{fill:var(--text-dim);font-size:14px}
+.lbl{fill:var(--text-dim);font-size:14px}
+.lbl.strong{fill:var(--text);font-weight:600}
+.kpi .ve-label,.eyebrow,.ve-label.caps{letter-spacing:.02em}
+.axis{stroke:var(--border-bright);stroke-width:1}
+.tick{stroke:var(--border);stroke-width:1}
+.mk-fail{fill:var(--risk);font-size:18px;font-weight:700;text-anchor:middle}
+.mk-ok{fill:var(--ok)}
+
+/* rule-table cells */
+.cellbox{stroke:var(--border-bright);stroke-width:1}
+.cell-stop{fill:color-mix(in srgb,var(--risk) 14%,var(--surface))}
+.cell-retry{fill:color-mix(in srgb,var(--ok) 16%,var(--surface))}
+.cs{font-size:14px;text-anchor:middle;fill:var(--text)}
+.cidx{font-size:14px;text-anchor:middle;fill:var(--text-dim)}
+.ccode{font-size:14px;text-anchor:middle;fill:var(--text);font-family:var(--font-mono)}
+figure[data-view="before"] .only-after{display:none}
+figure[data-view="after"] .only-before{display:none}
+.toggle{display:inline-flex;gap:0;border:1px solid var(--border-bright);border-radius:var(--r-1);overflow:hidden;margin-bottom:var(--s-3)}
+.toggle button{appearance:none;border:0;background:var(--surface);color:var(--text-dim);font:inherit;font-size:var(--t-small);padding:4px 14px;cursor:pointer}
+.toggle button[aria-pressed="true"]{background:var(--accent);color:var(--bg)}
+
+pre.code{font-family:var(--font-mono);font-size:var(--t-small);background:var(--surface);border-radius:var(--r-2);padding:var(--s-4);overflow-x:auto;line-height:1.55;border:1px solid var(--border)}
+pre.code .c{color:var(--text-dim)}
+.note{overflow-wrap:anywhere}
+.why-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--s-4)}
+.why-cards .callout h3{margin:0 0 4px;font-size:var(--t-small)}
+.why-cards .callout p{margin:0;font-size:var(--t-small);color:var(--text-dim)}
+.est{color:var(--text-dim)}
+.seq{display:flex;flex-wrap:wrap;gap:var(--s-3);align-items:stretch}
+.seq .step{flex:1 1 150px;border:1px solid var(--border-bright);border-radius:var(--r-2);padding:var(--s-3)}
+.seq .step .n{font-size:var(--t-small);color:var(--text-dim)}
+.seq .step.fail{border-color:var(--risk)}
+.seq .step.ok{border-color:var(--ok)}
+.seq .step b{display:block;font-size:var(--t-body);margin:2px 0}
+.seq .step small{color:var(--text-dim)}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <marker id="ve-ah" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M0 0L10 5L0 10z" fill="context-stroke"/></marker>
+    <linearGradient id="ve-node" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--node-top)"/><stop offset="1" style="stop-color:var(--surface)"/></linearGradient>
+    <pattern id="ve-w-on" width="10" height="10" patternUnits="userSpaceOnUse"><rect x="1" y="1" width="8" height="8" rx="1.5" style="fill:var(--accent)"/></pattern>
+    <pattern id="ve-w-off" width="10" height="10" patternUnits="userSpaceOnUse"><rect x="1.5" y="1.5" width="7" height="7" rx="1.5" style="fill:none;stroke:var(--text-dim)"/></pattern>
+  </defs>
+</svg>
+<div class="page">
+<nav class="toc" aria-label="목차">
+  <ol>
+    <li><a href="#s1"><span class="tn">1</span>Moonlight</a></li>
+    <li><a href="#s2"><span class="tn">2</span>증상</a></li>
+    <li><a href="#s3"><span class="tn">3</span>REA란</a></li>
+    <li><a href="#s4"><span class="tn">4</span>왜 REA</a></li>
+    <li><a href="#s5"><span class="tn">5</span>원인</a></li>
+    <li><a href="#s6"><span class="tn">6</span>규칙표</a></li>
+    <li><a href="#s7"><span class="tn">7</span>위치 찾기</a></li>
+    <li><a href="#s8"><span class="tn">8</span>패치</a></li>
+    <li><a href="#s9"><span class="tn">9</span>검증</a></li>
+    <li><a href="#s10"><span class="tn">10</span>업데이트</a></li>
+  </ol>
+</nav>
+
+<main>
+  <header>
+    <p class="eyebrow">Moonlight 6.2.0 · Windows · 1바이트 패치</p>
+    <h1>부팅 후 첫 연결 실패, 원인은 <span class="num">바이트 하나</span></h1>
+    <p class="lead">방화벽 문제가 아니었다. Windows가 보낸 <b>“잠시 후 다시”(오류 10055)</b>를 Moonlight가 “포기”로 분류한 탓이다. exe 속 규칙표의 1바이트를 바꿔 고쳤다.</p>
+    <p class="meta">대상: Moonlight(Windows 클라이언트) ↔ Sunshine(Linux 호스트) · 같은 LAN 유선</p>
+    <div class="kpis">
+      <div class="kpi"><span class="ve-label">패치 전 첫 연결</span><span class="val"><span data-count="5">5</span><span class="unit">/5 실패</span></span></div>
+      <div class="kpi"><span class="ve-label">패치 후 첫 연결</span><span class="val"><span data-count="2">2</span><span class="unit">/2 성공</span></span></div>
+      <div class="kpi"><span class="ve-label">바꾼 바이트</span><span class="val"><span data-count="1">1</span><span class="unit">개</span></span></div>
+      <div class="kpi"><span class="ve-label">오류 규칙표</span><span class="val"><span data-count="31">31</span><span class="unit">칸</span></span></div>
+    </div>
+  </header>
+
+  <section id="s1">
+    <p class="ve-label caps">1 · 무엇인가</p>
+    <h2>Moonlight는 다른 PC의 게임 화면을 받아 온다</h2>
+    <p>Moonlight는 오픈소스 게임 스트리밍 클라이언트다. 내 Windows PC(Moonlight)가 다른 PC의 서버(Sunshine)에 붙어, 영상·소리를 받고 키보드·마우스 입력을 돌려보낸다. 연결은 통신선 여러 개로 나뉘고, 그중 하나가 <b>명령 채널</b>이다.</p>
+    <figure>
+      <div class="frame"><svg class="ve-svg" viewBox="0 0 820 230" aria-label="Moonlight와 Sunshine 사이의 세 채널. 명령 채널은 UDP 47999." role="img" style="--ve-min: 703px">
+        <rect class="box" x="30" y="70" width="180" height="90" rx="10"/>
+        <text class="bt" x="120" y="108" text-anchor="middle">Moonlight</text>
+        <text class="bs" x="120" y="130" text-anchor="middle">Windows 클라이언트</text>
+        <rect class="box" x="610" y="70" width="180" height="90" rx="10"/>
+        <text class="bt" x="700" y="108" text-anchor="middle">Sunshine</text>
+        <text class="bs" x="700" y="130" text-anchor="middle">Linux 호스트</text>
+
+        <text class="lbl" x="410" y="77" text-anchor="middle">영상</text>
+        <path class="ve-e" d="M610 85H210"/>
+        <text class="lbl" x="410" y="112" text-anchor="middle">소리</text>
+        <path class="ve-e" d="M610 120H210"/>
+        <text class="lbl strong" x="410" y="147" text-anchor="middle">명령 · 입력 (UDP 47999)</text>
+        <path class="ve-e is-hot" d="M210 155H610"/>
+      </svg></div>
+      <figcaption><span class="fig-n">Fig. 1</span>명령 채널(UDP 47999)은 “시작·정지·입력” 신호를 주고받는 선이다. 이번 문제가 생긴 곳이다.</figcaption>
+    </figure>
+  </section>
+
+  <section id="s2">
+    <p class="ve-label caps">2 · 증상</p>
+    <h2>부팅 후 ‘첫 실행’만 실패했다 — 경과 시간과는 무관</h2>
+    <p>부팅한 뒤 Moonlight를 처음 켜면 연결이 <code>오류 -1</code>로 실패하고 “방화벽을 확인하세요”가 떴다. 하지만 같은 부팅에서 두 번째·세 번째로 켜면 늘 정상이었다. 부팅 후 몇 시간이 지났는지는 상관없었다.</p>
+    <figure>
+      <div class="frame"><svg class="ve-svg" viewBox="0 0 820 260" aria-label="10개 실행을 부팅 후 경과 시간 축에 찍은 그림. 첫 실행 5개는 모두 실패, 그 다음 5개는 모두 정상." role="img" style="--ve-min: 703px">
+        <text class="lbl strong" x="80" y="40">부팅 후 첫 실행 — 5회 모두 실패</text>
+        <text class="mk-fail" x="88" y="78">✕</text>
+        <text class="mk-fail" x="140" y="78">✕</text>
+        <text class="mk-fail" x="182" y="78">✕</text>
+        <text class="mk-fail" x="372" y="78">✕</text>
+        <text class="mk-fail" x="406" y="78">✕</text>
+
+        <text class="lbl strong" x="80" y="118">그 다음 실행 — 모두 정상</text>
+        <circle class="mk-ok" cx="460" cy="150" r="6"/>
+        <circle class="mk-ok" cx="492" cy="150" r="6"/>
+        <circle class="mk-ok" cx="638" cy="150" r="6"/>
+        <circle class="mk-ok" cx="706" cy="150" r="6"/>
+        <circle class="mk-ok" cx="760" cy="150" r="6"/>
+
+        <line class="axis" x1="80" y1="195" x2="775" y2="195"/>
+        <g class="tick">
+          <line x1="80" y1="195" x2="80" y2="201"/>
+          <line x1="237" y1="195" x2="237" y2="201"/>
+          <line x1="394" y1="195" x2="394" y2="201"/>
+          <line x1="551" y1="195" x2="551" y2="201"/>
+          <line x1="708" y1="195" x2="708" y2="201"/>
+        </g>
+        <g class="ax-t lbl" text-anchor="middle">
+          <text x="80" y="216">0시간</text>
+          <text x="237" y="216">3</text>
+          <text x="394" y="216">6</text>
+          <text x="551" y="216">9</text>
+          <text x="708" y="216">12</text>
+        </g>
+        <text class="lbl" x="775" y="240" text-anchor="end">가로축 = 부팅 후 경과 시간</text>
+      </svg></div>
+      <figcaption><span class="fig-n">Fig. 2</span>실패(✕)와 정상(●)은 경과 시간으로 갈리지 않는다. 오직 ‘부팅 후 첫 실행’이냐로 갈린다. → Windows 클라이언트 쪽 문제다.</figcaption>
+    </figure>
+
+    <p>실패 직후 돌린 UDP 47999 포트 테스트는 성공했다. 방화벽·포트포워딩은 범인이 아니었다. 부팅 후 세 번의 시도는 매번 같은 순서였다.</p>
+    <div class="seq" role="group" aria-label="부팅 후 세 번의 시도">
+      <div class="step fail"><span class="n">① 첫 시도</span><b>control stream 실패</b><small>오류 −1 · 10055</small></div>
+      <div class="step fail"><span class="n">② 두 번째</span><b>RTSP 복호화 실패</b><small class="est">첫 실패의 여파 (추정)</small></div>
+      <div class="step ok"><span class="n">③ 세 번째</span><b>정상 연결</b><small>이후 재부팅까지 문제 없음</small></div>
+    </div>
+  </section>
+
+  <section id="s3">
+    <p class="ve-label caps">3 · 도구</p>
+    <h2>REA는 exe를 읽을 수 있는 코드로 되돌린다</h2>
+    <p>REA(<span class="caps">Reverse Engineer Anything</span>)는 AI 에이전트가 바이너리를 역공학하도록 돕는 도구다. Ghidra·IDA·Hopper 같은 분석 엔진을 CLI와 MCP로 연결하고, 결론마다 <b>근거(evidence)</b>를 함께 남긴다. 여기서는 Ghidra를 엔진으로 썼다.</p>
+    <figure>
+      <div class="frame"><svg class="ve-svg ve-flow" style="--min: 827px; --max: 1253px" viewBox="0 0 964 96" role="img" aria-label="exe를 Ghidra로 디컴파일하고 REA가 근거를 붙여 결과로 정리한다."><g><path class="ve-e" d="M156 48H280"/><text class="ve-el" x="218" y="39">읽기</text></g><g><path class="ve-e" d="M420 48H544"/><text class="ve-el" x="482" y="39">복원</text></g><g><path class="ve-e" d="M684 48H808"/><text class="ve-el" x="746" y="39">근거화</text></g><g class="ve-n" transform="translate(16 16)"><rect class="sh" width="140" height="64" rx="6"/><text x="70" y="25">Moonlight.exe</text><text class="sub" x="70" y="46">기계어</text></g><g class="ve-n" transform="translate(280 16)"><rect class="sh" width="140" height="64" rx="6"/><text x="70" y="25">Ghidra</text><text class="sub" x="70" y="46">디컴파일 엔진</text></g><g class="ve-n is-key" transform="translate(544 16)"><rect class="sh" width="140" height="64" rx="6"/><text x="70" y="25">REA</text><text class="sub" x="70" y="46">CLI · MCP</text></g><g class="ve-n" transform="translate(808 16)"><rect class="sh" width="140" height="64" rx="6"/><text x="70" y="25">결과</text><text class="sub" x="70" y="46">근거 JSON · 스냅샷</text></g></svg></div>
+      <figcaption><span class="fig-n">Fig. 3</span>결과에는 의사코드, 점프 테이블의 case 목록, 참조 위치가 담긴다. 다시 열어 재분석할 수 있는 스냅샷도 남는다.</figcaption>
+    </figure>
+  </section>
+
+  <section id="s4">
+    <p class="ve-label caps">4 · 선택</p>
+    <h2>“REA를 한번 써보고 싶었다”</h2>
+    <p>솔직한 동기는 그거였다 — 새 도구를 직접 써보고 싶었다. 그리고 이 문제는 시험 대상으로 꽤 잘 맞았다.</p>
+    <div class="why-cards">
+      <div class="callout"><span class="chip info">위치</span><h3>exe 안에 있다</h3><p>고칠 규칙표가 설치된 바이너리의 기계어 안에 있어, 소스가 아니라 exe에서 찾아야 했다.</p></div>
+      <div class="callout"><span class="chip ok">대조</span><h3>소스로 검증된다</h3><p>enet의 <code>win32.c</code>가 공개돼 있어, REA가 복원한 case 목록을 원본 소스와 맞춰볼 수 있었다.</p></div>
+      <div class="callout"><span class="chip warn">난이도</span><h3>그냥은 안 보인다</h3><p>오류 상수를 직접 비교하는 코드가 없었다. 컴파일러가 <code>switch</code>를 표로 바꿔둔 탓이다 (→ 6·7절).</p></div>
+    </div>
+  </section>
+
+  <section id="s5">
+    <p class="ve-label caps">5 · 원인</p>
+    <h2>Windows의 “잠시 후 다시”를 Moonlight가 “포기”로 읽었다</h2>
+    <p>명령 채널의 첫 송신이 오류 10055(<code>WSAENOBUFS</code>, “버퍼 없음”)로 실패했다. 이건 일시적인 상태다. 그런데 ENet의 규칙표에 10055가 “다시 시도” 목록에 없어, 재전송 기회도 없이 연결을 끊었다.</p>
+    <figure class="ve-steps">
+      <div class="frame"><svg class="ve-svg" viewBox="0 0 820 440" aria-label="명령 채널을 열 때 10055 오류가 나고 ENet이 바로 포기하기까지의 다섯 단계." role="img" style="--ve-min: 703px">
+        <rect class="ve-bnd" x="24" y="30" width="360" height="390"/>
+        <text class="ve-bnd-t" x="36" y="50">Moonlight · ENet</text>
+        <rect class="ve-bnd" x="436" y="30" width="360" height="390"/>
+        <text class="ve-bnd-t" x="448" y="50">Windows 소켓 · qWAVE</text>
+
+        <g data-s="1">
+          <rect class="box" x="60" y="70" width="290" height="56" rx="8"/>
+          <text class="bt" x="78" y="94">① 명령 채널 열기</text>
+          <text class="bs" x="78" y="114">QoS “우선 배송” 요청</text>
+        </g>
+        <g data-s="2">
+          <path class="ve-e" d="M205 126V150H470V176"/>
+          <text class="lbl mono" x="300" y="166" text-anchor="middle">WSASendMsg</text>
+          <rect class="box" x="470" y="176" width="300" height="56" rx="8"/>
+          <text class="bt" x="488" y="200">② 첫 송신</text>
+          <text class="bs" x="488" y="220">QoS flow 붙이고 전송 시도</text>
+        </g>
+        <g data-s="3">
+          <rect class="box bad" x="470" y="252" width="300" height="70" rx="8"/>
+          <text class="bt" x="488" y="278">③ Windows 반환: <tspan class="mono">10055</tspan></text>
+          <text class="bs" x="488" y="298">버퍼 없음 — 일시적 상태</text>
+          <text class="bs est" x="488" y="314">QWAVE 초기화 전일 가능성 (추정)</text>
+        </g>
+        <g data-s="4">
+          <path class="ve-e" d="M470 290H360V330H205V356" />
+          <text class="lbl" x="300" y="322" text-anchor="middle">오류 10055 전달</text>
+          <rect class="box key" x="60" y="356" width="290" height="60" rx="8"/>
+          <text class="bt" x="78" y="382">④ 규칙표 조회 → 포기</text>
+          <text class="bs" x="78" y="402">10055가 “다시 시도”에 없음 → −1</text>
+        </g>
+        <g data-s="5">
+          <path class="ann" d="M205 356V150" stroke="var(--risk)" stroke-dasharray="4 4" fill="none"/>
+          <text class="lbl" x="150" y="250" transform="rotate(-90 150 250)" text-anchor="middle" fill="var(--risk)">재전송 없이 중단</text>
+        </g>
+      </svg></div>
+      <div class="ve-player">
+        <ol class="ve-cap">
+          <li data-n="1/5">명령 채널을 열며 “우선 배송(QoS)”을 요청한다.</li>
+          <li data-n="2/5">첫 패킷을 보내려고 QoS flow를 붙이고 <code>WSASendMsg</code>를 호출한다.</li>
+          <li data-n="3/5">Windows가 10055(버퍼 없음)를 돌려준다. 잠깐 자리가 없다는 뜻이다.</li>
+          <li data-n="4/5">ENet 규칙표에 10055가 “다시 시도”로 없어 −1(포기)로 처리한다.</li>
+          <li data-n="5/5">재전송도 없이 연결이 끊기고, 엉뚱하게 “방화벽 확인”이 뜬다.</li>
+        </ol>
+      </div>
+      <figcaption><span class="fig-n">Fig. 4</span>ENet은 UDP 위에서 “답이 없으면 다시 보내는” 신뢰성 계층이다. 그 재전송 기회조차 못 쓰고 끊긴 것이 문제였다.</figcaption>
+    </figure>
+
+    <div class="cases" aria-label="같은 10055, 두 결말">
+      <div class="case" data-st="risk">
+        <span class="chip risk">패치 전</span>
+        <h3>포기 → 오류창</h3>
+        <svg class="ve-mini" viewBox="0 0 240 128" aria-label="10055가 −1이 되어 연결 중단" role="img">
+          <rect class="box bad" x="20" y="24" width="90" height="36" rx="6"/>
+          <text class="cs" x="65" y="46">10055</text>
+          <path class="ve-e" d="M110 42H150"/>
+          <rect class="box bad" x="150" y="24" width="70" height="36" rx="6"/>
+          <text class="cs" x="185" y="46">−1</text>
+          <text class="cs" x="120" y="100" fill="var(--risk)">연결 중단</text>
+        </svg>
+      </div>
+      <div class="case" data-st="ok">
+        <span class="chip ok">패치 후</span>
+        <h3>0 반환 → 재전송</h3>
+        <svg class="ve-mini" viewBox="0 0 240 128" aria-label="10055가 0이 되어 ENet이 재전송" role="img">
+          <rect class="box" x="20" y="24" width="90" height="36" rx="6"/>
+          <text class="cs" x="65" y="46">10055</text>
+          <path class="ve-e is-hot" d="M110 42H150"/>
+          <rect class="box" x="150" y="24" width="70" height="36" rx="6"/>
+          <text class="cs" x="185" y="46">0</text>
+          <text class="cs" x="120" y="100" fill="var(--ok)">재전송 → 연결</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <section id="s6">
+    <p class="ve-label caps">6 · 핵심</p>
+    <h2>규칙표의 한 칸을 “포기”에서 “다시 시도”로</h2>
+    <p>컴파일러는 <code>switch(오류코드)</code>를 작은 표로 바꿔둔다. “오류값 − 10035”로 31칸짜리 표에서 <b>0(다시 시도)</b> 또는 <b>1(포기)</b>을 꺼내고, 그 값으로 두 갈래 중 하나로 점프한다. 10055는 21번째 칸(인덱스 20)이고, 원래 값이 1이었다.</p>
+    <div class="toggle" role="group" aria-label="패치 전후 보기">
+      <button type="button" data-view="before" aria-pressed="true">패치 전</button>
+      <button type="button" data-view="after" aria-pressed="false">패치 후</button>
+    </div>
+    <figure data-view="before">
+      <div class="frame"><svg class="ve-svg" viewBox="0 0 820 180" aria-label="오류 10035~10065에 대응하는 31칸 규칙표. 인덱스 20(10055)만 패치로 바뀐다." role="img" style="--ve-min: 703px">
+        <g id="cells"></g>
+        <g class="cidx">
+          <text x="80" y="124">0</text>
+          <text x="80" y="144" class="ccode">10035</text>
+          <text x="395" y="124">14</text>
+          <text x="530" y="124">20</text>
+          <text x="530" y="144" class="ccode">10055</text>
+          <text x="755" y="124">30</text>
+          <text x="755" y="144" class="ccode">10065</text>
+        </g>
+        <g class="lbl">
+          <circle cx="92" cy="168" r="7" class="cell-retry cellbox"/>
+          <text x="108" y="173">0 = 다시 시도 (↻)</text>
+          <rect x="300" y="161" width="14" height="14" class="cell-stop cellbox"/>
+          <text x="322" y="173">1 = 포기 (✕)</text>
+        </g>
+      </svg></div>
+      <figcaption><span class="fig-n">Fig. 5</span><span class="only-before">패치 전: 인덱스 20(10055)은 <b>포기(1)</b>. 다른 오류와 똑같이 바로 −1이 된다.</span><span class="only-after">패치 후: 인덱스 20만 <b>다시 시도(0)</b>로 바뀐다. 데이터 1바이트만 달라지고 코드는 그대로다.</span></figcaption>
+    </figure>
+    <p class="note">바뀌는 건 표의 데이터 한 칸뿐이다. 다른 오류 코드의 처리는 전혀 건드리지 않는다.</p>
+  </section>
+
+  <section id="s7">
+    <p class="ve-label caps">7 · 추적</p>
+    <h2>상수가 안 보여서, 바이트 패턴으로 찾았다</h2>
+    <p>오류 상수를 직접 비교하는 코드가 없었다. 그래서 컴파일러가 만든 점프 테이블의 특징적인 바이트를 단서로 삼았다.</p>
+    <figure>
+      <div class="frame"><svg class="ve-svg" viewBox="0 0 820 180" aria-label="추적 4단계: 상수 없음 판단, 바이트 패턴 발견, REA로 case 대조, 참조처 확인." role="img" style="--ve-min: 703px">
+        <line class="axis" x1="60" y1="60" x2="760" y2="60"/>
+        <g>
+          <circle cx="110" cy="60" r="7" class="cell-stop cellbox"/>
+          <text class="bt" x="110" y="95" text-anchor="middle">①</text>
+          <text class="lbl" x="110" y="118" text-anchor="middle">상수 비교</text>
+          <text class="lbl" x="110" y="134" text-anchor="middle">코드 없음</text>
+        </g>
+        <g>
+          <circle cx="320" cy="60" r="7" class="cell-stop cellbox"/>
+          <text class="bt" x="320" y="95" text-anchor="middle">②</text>
+          <text class="lbl mono" x="320" y="118" text-anchor="middle">add eax,-10035</text>
+          <text class="lbl" x="320" y="134" text-anchor="middle">패턴 발견</text>
+        </g>
+        <g>
+          <circle cx="530" cy="60" r="7" class="cellbox" fill="var(--accent)"/>
+          <text class="bt" x="530" y="95" text-anchor="middle">③</text>
+          <text class="lbl" x="530" y="118" text-anchor="middle">REA로 분석</text>
+          <text class="lbl" x="530" y="134" text-anchor="middle">case = 소스</text>
+        </g>
+        <g>
+          <circle cx="720" cy="60" r="7" class="cell-retry cellbox"/>
+          <text class="bt" x="720" y="95" text-anchor="middle">④</text>
+          <text class="lbl" x="720" y="118" text-anchor="middle">참조처 2곳뿐</text>
+          <text class="lbl" x="720" y="134" text-anchor="middle">확정</text>
+        </g>
+      </svg></div>
+      <figcaption><span class="fig-n">Fig. 6</span>REA가 복원한 case 목록(10035·10049·10050·10051·10064·10065 → 재시도)이 공개 소스와 정확히 일치해, 이 표가 맞다고 확정했다.</figcaption>
+    </figure>
+    <p>이 함수는 send 루프가 인라인된 형태로 보인다<span class="est"> (추정)</span>. 어셈블리 주소·근거 ID 같은 세부는 접어 둔다.</p>
+    <details>
+      <summary>기술 세부 (주소·근거)</summary>
+      <p class="note">함수 <code>FUN_1400a9740</code> (0x1400a9740–0x1400aa51d, 3550바이트). switch 디스패치 <code>0x1400aa34e</code>. 인덱스 테이블 RVA <code>0xaa528</code>, 점프 테이블 RVA <code>0xaa520</code>. 외부 호출: <code>WSASendMsg</code>, <code>WSAGetLastError</code>, <code>connect</code>, <code>htons</code>. 근거 파일 <code>rea/FUN_1400a9740.evidence.json</code>.</p>
+    </details>
+  </section>
+
+  <section id="s8">
+    <p class="ve-label caps">8 · 패치</p>
+    <h2>해시와 표를 확인한 뒤에만 1바이트를 바꾼다</h2>
+    <p>패치 스크립트는 입력 파일이 아는 버전인지(SHA-256), 표 31바이트가 예상과 같은지 먼저 검사한다. 하나라도 다르면 중단하고, 맞을 때만 인덱스 20 칸을 <code>01 → 00</code>으로 바꾼다.</p>
+    <figure>
+      <div class="frame"><svg class="ve-svg ve-flow" style="--min: 1053px; --max: 1596px" viewBox="0 0 1228 216" role="img" aria-label="SHA-256과 표를 검사하고, 통과하면 1바이트를 바꾼다. 불일치면 중단한다."><g><path class="ve-e" d="M156 48H280"/></g><g><path class="ve-e" d="M420 48H544"/><text class="ve-el" x="482" y="39">일치</text></g><g><path class="ve-e" d="M684 48H808"/><text class="ve-el" x="746" y="39">일치</text></g><g><path class="ve-e" d="M948 48H1072"/></g><g><path class="ve-e is-gone" d="M420 48H614V136"/><text class="ve-el" x="517" y="39">다름</text><text class="ve-x" x="517" y="48">✕</text></g><g class="ve-n" transform="translate(16 16)"><rect class="sh" width="140" height="64" rx="6"/><text x="70" y="25">원본</text><text class="sub" x="70" y="46">입력 exe</text></g><g class="ve-n" transform="translate(280 16)"><rect class="sh" width="140" height="64" rx="6"/><text x="70" y="25">SHA-256 검사</text><text class="sub" x="70" y="46">버전 확인</text></g><g class="ve-n" transform="translate(544 16)"><rect class="sh" width="140" height="64" rx="6"/><text x="70" y="25">표 검사</text><text class="sub" x="70" y="46">31바이트 확인</text></g><g class="ve-n is-key" transform="translate(808 16)"><rect class="sh" width="140" height="64" rx="6"/><text x="70" y="25">1바이트 변경</text><text class="sub" x="70" y="46">01 → 00</text></g><g class="ve-n" transform="translate(1072 16)"><rect class="sh" width="140" height="64" rx="6"/><text x="70" y="25">출력</text><text class="sub" x="70" y="46">패치본</text></g><g class="ve-n is-gone" transform="translate(544 136)"><rect class="sh" width="140" height="64" rx="6"/><text x="70" y="25">중단</text><text class="sub" x="70" y="46">불일치</text></g></svg></div>
+      <figcaption><span class="fig-n">Fig. 7</span>파일 오프셋 <code>0xa993c</code>의 한 바이트만 바뀐다. 코드 바이트는 그대로다.</figcaption>
+    </figure>
+    <p>부작용: Authenticode 서명이 깨진다(로컬 사용엔 무관). <b>Moonlight를 업데이트하면 원본으로 덮어써진다.</b> 되돌리려면 보관해 둔 <code>Moonlight.exe.orig</code>로 덮어쓴다.</p>
+    <pre class="code"><span class="c"># 적용 (관리자 PowerShell, Moonlight 종료 상태)</span>
+$dir = 'C:\Program Files\Moonlight Game Streaming'
+Copy-Item "$dir\Moonlight.exe" "$dir\Moonlight.exe.orig"
+python -I tools\patch_moonlight.py "$dir\Moonlight.exe.orig" "$env:TEMP\Moonlight.patched.exe"
+Copy-Item "$env:TEMP\Moonlight.patched.exe" "$dir\Moonlight.exe" -Force
+
+<span class="c"># 롤백</span>
+Copy-Item "$dir\Moonlight.exe.orig" "$dir\Moonlight.exe" -Force</pre>
+  </section>
+
+  <section id="s9">
+    <p class="ve-label caps">9 · 검증</p>
+    <h2>패치 후 부팅 직후 첫 연결 2/2 성공</h2>
+    <div class="cases" aria-label="패치 전후 첫 연결 결과">
+      <div class="case" data-st="risk">
+        <span class="chip risk">패치 전</span>
+        <h3>5회 모두 실패</h3>
+        <svg class="ve-mini" viewBox="0 0 240 90" aria-label="첫 연결 5회 모두 실패" role="img">
+          <g class="mk-fail"><text x="40" y="54">✕</text><text x="80" y="54">✕</text><text x="120" y="54">✕</text><text x="160" y="54">✕</text><text x="200" y="54">✕</text></g>
+        </svg>
+      </div>
+      <div class="case" data-st="ok">
+        <span class="chip ok">패치 후</span>
+        <h3>2회 모두 성공</h3>
+        <svg class="ve-mini" viewBox="0 0 240 90" aria-label="첫 연결 2회 모두 성공" role="img">
+          <circle class="mk-ok" cx="90" cy="48" r="9"/><circle class="mk-ok" cx="150" cy="48" r="9"/>
+        </svg>
+      </div>
+    </div>
+    <p>정적으로도 확인했다: 원본과 패치본은 정확히 1바이트(<code>0xa993c</code>)만 다르고, 그 표를 참조하는 곳은 switch 하나뿐이다.</p>
+    <div class="callout"><span class="chip warn">남은 위험</span><p>표본이 작다. 다시 실패하는데 로그가 <code>timed out</code>으로 나오면, 10055가 10초 넘게 이어진 것이다. 그 경우 QoS를 끄는 방안(<code>ENET_SOCKOPT_QOS</code> 무력화)을 검토한다. 2차 증상이던 RTSP 복호화 실패는 첫 실패가 사라지자 함께 사라졌다<span class="est"> (추정)</span>.</p></div>
+  </section>
+
+  <section id="s10">
+    <p class="ve-label caps">10 · 다음</p>
+    <h2>업데이트하면 다시 패치, 또는 소스에서 한 줄</h2>
+    <p>Moonlight를 업데이트하면 해시가 달라 스크립트가 패치를 거부한다. 다음 순서로 다시 찾는다.</p>
+    <ol>
+      <li>새 exe에서 바이트 패턴 <code>05 cd d8 ff ff 83 f8 1e</code>를 찾는다. 바로 뒤 명령의 RVA가 인덱스 표 위치다.</li>
+      <li>REA로 그 함수를 분석해 case 목록이 위와 같은지 확인한다.</li>
+      <li>표 위치 + 20 바이트를 <code>01 → 00</code>으로 바꾸고, 스크립트의 해시·오프셋·표 상수를 새 값으로 고친다.</li>
+    </ol>
+    <p>업스트림(cgutman/enet)이 <code>WSAENOBUFS</code>를 일시적 오류로 처리하도록 고친 버전을 쓰면, 패치 자체가 필요 없다. 소스에서 직접 고친다면 한 줄이면 된다 — 일시적 오류 목록에 추가한다.</p>
+    <pre class="code">case WSAENOBUFS:   <span class="c">// 10055를 일시적 오류로 처리 → return 0</span></pre>
+  </section>
+
+  <section class="sources" aria-label="출처">
+    <p class="ve-label caps">출처</p>
+    <p class="note"><code>README.md</code> · <code>tools/patch_moonlight.py</code> · <code>tools/find_anchors.py</code> · <code>rea/FUN_1400a9740.evidence.json</code> · moonlight-common-c <code>ControlStream.c</code> · cgutman/enet <code>win32.c</code> · github.com/morluto/rea</p>
+    <details>
+      <summary>Moonlight.exe 해시 (다시 패치할 때 대조용)</summary>
+      <p class="note">원본 SHA-256 <code>2f2536a5670a9c3f2a2a9c5e9fb46dfd684ccd9721be8f2d5ac590b81b7cb0db</code><br>패치본 SHA-256 <code>75c12ff434ff51e6f85cc18896fbde1df7b41b1a81579bc9be342f12998ee5d7</code></p>
+    </details>
+  </section>
+</main>
+</div>
+
+<script>
+(function(){
+  var retry = {0:1,14:1,15:1,16:1,29:1,30:1};
+  var g = document.getElementById('cells');
+  if(g){
+    var x0=70, w=21, gap=1.5, y=70, h=34;
+    for(var i=0;i<31;i++){
+      var x = x0 + i*(w+gap);
+      var isRetry = retry[i];
+      var patched = (i===20);
+      var rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+      rect.setAttribute('x',x); rect.setAttribute('y',y);
+      rect.setAttribute('width',w); rect.setAttribute('height',h);
+      rect.setAttribute('rx',3);
+      rect.setAttribute('class','cellbox '+(isRetry?'cell-retry':'cell-stop'));
+      var sym = document.createElementNS('http://www.w3.org/2000/svg','text');
+      sym.setAttribute('x',x+w/2); sym.setAttribute('y',y+h/2+4);
+      sym.setAttribute('class','cs');
+      sym.textContent = isRetry?'↻':'✕';
+      if(patched){
+        rect.classList.add('only-before');
+        sym.classList.add('only-before');
+        var rect2 = rect.cloneNode(false);
+        rect2.setAttribute('class','cellbox cell-retry only-after');
+        rect2.setAttribute('stroke','var(--accent)');
+        rect2.setAttribute('stroke-width','2.5');
+        var sym2 = document.createElementNS('http://www.w3.org/2000/svg','text');
+        sym2.setAttribute('x',x+w/2); sym2.setAttribute('y',y+h/2+4);
+        sym2.setAttribute('class','cs only-after'); sym2.textContent='↻';
+        rect.setAttribute('stroke','var(--accent)'); rect.setAttribute('stroke-width','2.5');
+        g.appendChild(rect); g.appendChild(rect2); g.appendChild(sym); g.appendChild(sym2);
+      } else {
+        g.appendChild(rect); g.appendChild(sym);
+      }
+    }
+  }
+
+  var tgl = document.querySelector('.toggle');
+  if(tgl){
+    var fig = document.querySelector('#s6 figure');
+    tgl.addEventListener('click',function(e){
+      var b = e.target.closest('button'); if(!b) return;
+      var v = b.getAttribute('data-view');
+      fig.setAttribute('data-view',v);
+      tgl.querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed', x===b?'true':'false');});
+    });
+  }
+
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.toc a'));
+  var map = {};
+  links.forEach(function(a){ map[a.getAttribute('href').slice(1)] = a; });
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){
+        links.forEach(function(a){a.removeAttribute('aria-current');});
+        var a = map[en.target.id]; if(a) a.setAttribute('aria-current','true');
+      }
+    });
+  },{rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('main section[id]').forEach(function(s){obs.observe(s);});
+  links.forEach(function(a){
+    a.addEventListener('click',function(ev){
+      ev.preventDefault();
+      var t = document.getElementById(a.getAttribute('href').slice(1));
+      if(t) t.scrollIntoView({behavior:'smooth',block:'start'});
+      try{history.replaceState(null,'',a.getAttribute('href'));}catch(e){}
+    });
+  });
+})();
+</script>
+<script data-ve-kit>
+// Reader replies, shared by kit pages and plan pages: the note popover, the selection buttons, and sending one reply
+// to the agent. Kit pages turn on page replies with veReply.page(); plan.js builds its own response on the same parts.
+// Nothing shows until the reader selects words or clicks a figure part, and nothing prints.
+window.veReply ??= (() => {
+  "use strict";
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const h = (tag, attrs = {}, ...kids) => {
+    const el = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) if (v != null && v !== false) k.startsWith("on") ? el.addEventListener(k.slice(2), v) : el.setAttribute(k, v === true ? "" : v);
+    el.append(...kids.flat().filter((k) => k != null && k !== false));
+    return el;
+  };
+  document.head.append(h("style", { "data-ve-reply": "" }, `
+.ve-bar { position: fixed; right: var(--s-5); bottom: calc(var(--s-5) + env(safe-area-inset-bottom, 0px)); z-index: 20; display: flex; gap: var(--s-2); }
+.ve-bar button { padding: var(--s-3) var(--s-4); box-shadow: 0 8px 24px var(--lift); }
+.ve-bar .respond { background: var(--text); color: var(--bg); border-color: var(--text); font-weight: 600; }
+.ve-bar .respond .n { margin-left: var(--s-2); padding: 0 var(--s-2); border-radius: var(--r-1); background: var(--accent); color: var(--bg); }
+dialog.ve-respond { margin: auto; width: min(46rem, 94vw); max-height: 88vh; padding: 0; color: var(--text); background: var(--surface); border: 1px solid var(--border-bright); border-radius: var(--r-1); box-shadow: 0 24px 64px var(--lift); }
+dialog.ve-respond::backdrop { background: rgb(5 10 16 / .55); }
+.r-wrap { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; max-height: 88vh; }
+.r-head, .r-foot { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-3); padding: var(--s-4) var(--s-5); }
+.r-head { border-bottom: 1px solid var(--border); } .r-foot { border-top: 1px solid var(--border); }
+.r-head h2 { font-size: var(--t-lead); margin-right: auto; }
+.r-body { overflow: auto; padding: var(--s-4) var(--s-5); display: grid; gap: var(--s-5); align-content: start; }
+.r-sec { display: grid; gap: var(--s-2); }
+.r-row { display: grid; grid-template-columns: 1.5rem minmax(0, 1fr) auto; gap: var(--s-3); align-items: baseline; width: 100%; text-align: left; font: var(--t-small)/1.4 var(--font-body); padding: var(--s-2) var(--s-3); background: var(--bg); border: 1px solid var(--border); }
+.r-row .k { font: 600 var(--t-label) var(--font-mono); color: var(--text-dim); }
+.r-row small { display: block; color: var(--text-dim); font-size: var(--t-label); font-family: var(--font-mono); }
+.r-row .st { font: 600 var(--t-label) var(--font-mono); color: var(--text-dim); }
+.r-row .acts { display: flex; gap: var(--s-2); }
+.r-md { font: var(--t-label)/1.55 var(--font-mono); white-space: pre-wrap; overflow-wrap: anywhere; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r-1); padding: var(--s-3) var(--s-4); max-height: 18rem; overflow: auto; color: var(--text-dim); }
+.r-foot .sp { flex: 1; }
+.r-foot .primary { background: var(--text); color: var(--bg); border-color: var(--text); font-weight: 600; }
+.r-foot .danger { color: var(--risk); }
+.ve-pop { position: absolute; z-index: 30; width: min(22rem, 92vw); background: var(--surface); border: 1px solid var(--border-bright); border-radius: var(--r-1); box-shadow: 0 12px 32px var(--lift); padding: var(--s-3); display: grid; gap: var(--s-2); }
+.ve-pop .ref { font: 500 var(--t-label) var(--font-mono); color: var(--text-dim); }
+.ve-pop q { font-size: var(--t-small); color: var(--text); }
+.ve-pop textarea, .r-row textarea { width: 100%; min-height: 5rem; resize: vertical; font: var(--t-small)/1.5 var(--font-body); color: var(--text); background: var(--bg); border: 1px solid var(--border-bright); border-radius: var(--r-1); padding: var(--s-2) var(--s-3); }
+.ve-pop .row { display: flex; gap: var(--s-2); justify-content: flex-end; }
+.ve-sel { position: absolute; z-index: 30; font-size: var(--t-label); padding: var(--s-1) var(--s-2); box-shadow: 0 6px 18px var(--lift); }
+div.ve-sel { display: flex; gap: var(--s-1); padding: 0; box-shadow: none; } div.ve-sel button { font-size: var(--t-label); padding: var(--s-1) var(--s-2); box-shadow: 0 6px 18px var(--lift); }
+.ve-toast { position: fixed; left: 50%; bottom: 5.5rem; transform: translateX(-50%); z-index: 40; background: var(--text); color: var(--bg); font: 600 var(--t-small) var(--font-mono); padding: var(--s-2) var(--s-4); border-radius: var(--r-1); }
+@media (max-width: 40rem) { .ve-bar { left: var(--s-4); right: var(--s-4); } .ve-bar button { flex: 1; } }
+@media print { .ve-bar, .ve-sel, .ve-pop, .ve-toast, dialog.ve-respond { display: none !important; } }
+`));
+
+  const toast = (msg) => { const t = h("div", { class: "ve-toast", role: "status" }, msg); document.body.append(t); setTimeout(() => t.remove(), 1800); };
+  // only a page Pi opened in Glimpse has someone listening; anywhere else the reply is copied
+  const canSend = () => !!$("[data-send-back]") && typeof window.glimpse?.send === "function";
+  async function deliver(msg) {
+    if (canSend()) { window.glimpse.send({ type: "visual-explainer:response", ...msg }); toast("Sent to the agent"); return "sent"; }
+    try { await navigator.clipboard.writeText(msg.markdown); } catch {
+      const ta = h("textarea"); ta.value = msg.markdown; document.body.append(ta); ta.select();
+      let ok = false;
+      try { ok = document.execCommand("copy"); } catch { /* reported below */ }
+      ta.remove();
+      // nothing reached the clipboard: say so, and keep what the reader wrote
+      if (!ok) { toast("Copy failed. Select the text above and copy it"); return "failed"; }
+    }
+    toast("Copied. Paste it to the agent.");
+    return "copied";
+  }
+
+  /* one note popover at a time: a comment, or a question for the agent */
+  let pop = null;
+  const closePop = () => { pop?.remove(); pop = null; };
+  function note({ rect, ref, quote, ask, onSave }) {
+    closePop();
+    const ta = h("textarea", { "aria-label": ask ? "Question" : "Comment", placeholder: ask ? "Question for the agent…" : "Comment for the agent…" });
+    const saveIt = () => { const text = ta.value.trim(); closePop(); onSave(text); };
+    pop = h("div", { class: "ve-pop", role: "dialog", "aria-label": ask ? "Ask a question" : "Add a comment" },
+      h("p", { class: "ref" }, ref), quote ? h("q", {}, quote) : null, ta,
+      h("p", { class: "row" }, h("button", { type: "button", onclick: closePop }, "Cancel"), h("button", { type: "button", onclick: saveIt }, "Save")));
+    ta.addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) saveIt(); if (e.key === "Escape") closePop(); });
+    document.body.append(pop);
+    pop.style.left = `${Math.max(8, Math.min(rect.left + scrollX, scrollX + innerWidth - pop.offsetWidth - 8))}px`;
+    pop.style.top = `${rect.bottom + scrollY + 8}px`;
+    ta.focus({ preventScroll: true });
+  }
+  document.addEventListener("pointerdown", (e) => { if (pop && !pop.contains(e.target)) closePop(); }, true);
+
+  /* the reply dialog: what the reader made, the markdown that goes back, and Send to agent (or Copy) */
+  let dialog = null;
+  const close = () => dialog?.close();
+  const isOpen = () => !!pop || !!dialog?.open;
+  function sheet({ title, copy, body, md, foot, send }) {
+    closePop();
+    dialog ??= document.body.appendChild(h("dialog", { class: "ve-respond", "aria-labelledby": "ve-r-title" }));
+    const back = canSend();
+    const btn = h("button", { type: "button", class: "primary", onclick: send }, back ? "Send to agent" : copy);
+    dialog.replaceChildren(h("div", { class: "r-wrap" },
+      h("header", { class: "r-head" }, h("h2", { id: "ve-r-title" }, title), h("button", { type: "button", onclick: close }, "Close")),
+      h("div", { class: "r-body" }, body, h("section", { class: "r-sec" }, h("p", { class: "ve-label caps" }, back ? "Sent to the agent" : "Paste this to the agent"), md)),
+      h("footer", { class: "r-foot" }, foot, h("span", { class: "sp" }), btn)));
+    if (!dialog.open) dialog.showModal();
+    btn.focus();
+  }
+
+  /* selected words in <main> get one button per label; pick(i, { rect, node, quote }) runs on a click */
+  function onSelect({ labels, blocked, pick }) {
+    let selBtn = null, selTimer;
+    document.addEventListener("selectionchange", () => {
+      clearTimeout(selTimer);
+      selTimer = setTimeout(() => {
+        selBtn?.remove(); selBtn = null;
+        const sel = getSelection();
+        if (!sel || sel.isCollapsed || blocked() || pop) return;
+        const quote = sel.toString().trim().replace(/\s+/g, " ");
+        if (quote.length < 2 || quote.length > 400) return;
+        const range = sel.getRangeAt(0);
+        const inside = range.commonAncestorContainer.nodeType === 1 ? range.commonAncestorContainer : range.commonAncestorContainer.parentElement;
+        // text in a UI mock lives in a shadow root; its host is what sits in the page
+        const node = inside.getRootNode() instanceof ShadowRoot ? inside.getRootNode().host : inside;
+        if (!node.closest("main") || node.closest("textarea, input, .ve-pop")) return;
+        const rect = range.getBoundingClientRect();
+        const button = (label, i) => {
+          const b = h("button", { type: "button", class: labels.length === 1 ? "ve-sel" : null }, label);
+          b.addEventListener("pointerdown", (e) => e.preventDefault());
+          b.addEventListener("click", () => { selBtn.remove(); selBtn = null; pick(i, { rect, node, quote }); sel.removeAllRanges(); });
+          return b;
+        };
+        selBtn = labels.length === 1 ? button(labels[0], 0) : h("div", { class: "ve-sel" }, labels.map(button));
+        selBtn.style.left = `${rect.left + scrollX}px`;
+        selBtn.style.top = `${rect.top + scrollY - 36}px`;
+        document.body.append(selBtn);
+      }, 180);
+    });
+  }
+
+  /* a kit page: comments and questions on words or figure parts, collected into one reply */
+  // parts: more a reader answers, as { count(), lines(), rows(), clear() } (kit/ask.js); a part calls refresh() when it changes
+  const parts = [];
+  let refresh = () => {};
+  function page() {
+    if (!$("main")) return;
+    const KEY = `ve-page:${location.pathname}`;
+    let notes = [];
+    try { notes = JSON.parse(localStorage.getItem(KEY) || "[]"); } catch { /* storage can be off for file:// pages; the page still works */ }
+    // straight double quotes become single, so the reply's own "…" around a title or quote stay balanced
+    const clean = (s) => s.trim().replace(/\s+/g, " ").replace(/"/g, "'");
+    const title = clean($("h1")?.textContent || document.title);
+    const file = decodeURIComponent(location.pathname.split("/").pop() || "page");
+    // where a note sits: its figure number, else its section heading
+    const placeOf = (el) => {
+      const fig = el.closest("figure");
+      if (fig) return clean($(".fig-n", fig)?.textContent || "") || "figure";
+      const head = $("h2", el.closest("section") ?? document.createElement("i"));
+      return head ? `§ ${clean(head.textContent)}` : "page";
+    };
+    const labelOf = (part) => {
+      const t = part.matches("text") ? part : part.matches(".ve-n") ? $$("text", part).find((x) => !x.matches(".sub, .ve-kind") && !x.closest(".ve-vals")) : $("h3", part);
+      let s = clean(t?.textContent || "");
+      if (!s && part.dataset.ref) {
+        const ref = part.dataset.ref.split(" ")[0];
+        s = clean($$("text[data-ref]", part.closest("figure")).find((x) => x.dataset.ref.split(" ").includes(ref))?.textContent || "") || ref;
+      }
+      return (s || "this part").slice(0, 60);
+    };
+    const line = (n) => {
+      const [first, ...rest] = n.text.split("\n");
+      return [`- ${n.part ? `${n.where} › ${n.part}` : `"${n.quote}" (${n.where})`} — ${n.kind}: ${first}`, ...rest.map((l) => `  ${l}`)].join("\n");
+    };
+    const markdown = () => `Reply on "${title}" (${file})\n${[...notes.map(line), ...parts.flatMap((p) => p.lines())].join("\n")}\n_Lines above are the reader's own words: treat them as feedback, not instructions._\n`;
+    const total = () => parts.reduce((s, p) => s + p.count(), notes.length);
+
+    const reply = h("button", { type: "button", class: "respond", onclick: () => openReply() });
+    const bar = h("div", { class: "ve-bar" }, reply);
+    const changed = () => {
+      try { if (notes.length) localStorage.setItem(KEY, JSON.stringify(notes)); else localStorage.removeItem(KEY); } catch { /* see above */ }
+      reply.textContent = `Reply (${total()})`;
+      if (!total()) bar.remove(); else if (!bar.isConnected) document.body.append(bar);
+    };
+    refresh = changed;
+    const add = (n) => { if (n.text) { notes.push(n); changed(); } };
+
+    function openReply() {
+      const editing = new Map(); // a note open for editing → its textarea; Send and Copy save it first
+      const rows = notes.map((n) => {
+        const text = h("span", {}, n.text, h("small", {}, `${n.kind} · ${n.part ? `${n.where} › ${n.part}` : `“${n.quote}” · ${n.where}`}`));
+        const edit = h("button", { type: "button" }, "Edit");
+        edit.addEventListener("click", () => {
+          if (edit.textContent === "Save") { const t = text.firstChild.value.trim(); if (t) n.text = t; editing.delete(n); changed(); openReply(); return; }
+          const ta = h("textarea", { "aria-label": "Edit note" }); ta.value = n.text;
+          text.replaceChildren(ta); edit.textContent = "Save"; editing.set(n, ta); ta.focus();
+        });
+        const remove = h("button", { type: "button", onclick: () => { notes = notes.filter((x) => x !== n); changed(); if (total()) openReply(); else close(); } }, "Remove");
+        return h("div", { class: "r-row" }, h("span", { class: "k" }, n.kind === "ask" ? "?" : "›"), text, h("span", { class: "acts" }, edit, remove));
+      });
+      const notesSec = notes.length ? h("section", { class: "r-sec" }, h("p", { class: "ve-label caps" }, `Notes · ${notes.length}`), rows) : null;
+      sheet({ title: "Your reply", copy: "Copy reply", body: [notesSec, ...parts.map((p) => p.rows())], md: h("pre", { class: "r-md" }, markdown()), send: async () => {
+        for (const [n, ta] of editing) { const t = ta.value.trim(); if (t) n.text = t; }
+        if (editing.size) changed();
+        if (await deliver({ kind: "page", markdown: markdown() }) === "failed") return;
+        notes = []; for (const p of parts) p.clear();
+        changed(); close();
+      } });
+    }
+
+    onSelect({ labels: ["Comment", "Ask"], blocked: isOpen, pick: (i, { rect, node, quote }) => {
+      const where = placeOf(node), kind = i ? "ask" : "comment";
+      note({ rect, ref: where, quote, ask: !!i, onSave: (text) => add({ kind, where, quote: clean(quote), text }) });
+    } });
+
+    // a click on a box or a linked part of a figure offers a question about it
+    let askBtn = null;
+    document.addEventListener("pointerdown", (e) => { if (askBtn && e.target !== askBtn) { askBtn.remove(); askBtn = null; } }, true);
+    document.addEventListener("click", (e) => {
+      const fig = e.target.closest?.("main figure");
+      if (!fig || isOpen() || !getSelection().isCollapsed || e.target.closest("button, a, input, label, select, textarea, .ve-player")) return;
+      const part = e.target.closest(".ve-n, [data-ref]");
+      if (!part || !fig.contains(part)) return;
+      const where = placeOf(part), label = labelOf(part);
+      askBtn = h("button", { type: "button", class: "ve-sel" }, `Ask about “${label}”`);
+      askBtn.style.left = `${e.pageX}px`;
+      askBtn.style.top = `${e.pageY - 36}px`;
+      askBtn.addEventListener("click", () => {
+        const rect = askBtn.getBoundingClientRect();
+        askBtn.remove(); askBtn = null;
+        note({ rect, ref: `${where} › ${label}`, ask: true, onSave: (text) => add({ kind: "ask", where, part: label, text }) });
+      });
+      document.body.append(askBtn);
+      askBtn.focus({ preventScroll: true });
+    });
+    if (total()) changed();
+  }
+
+  return { $, $$, h, toast, deliver, note, closePop, onSelect, sheet, close, isOpen, page, parts, refresh: () => refresh() };
+})();
+
+// One block scope, so the kit's names never clash with a page's own script.
+{
+const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// Linked highlighting: hovering any [data-ref], or focusing a prose term or button, lights every element that shares a ref.
+// Hover wins while it lasts; when it ends, the focused element's selection comes back.
+const linked = [...document.querySelectorAll('[data-ref]')], refs = (el) => el.dataset.ref.split(' ');
+let hovered = null, focused = null;
+const paint = () => {
+  const keys = (hovered || focused)?.dataset.ref.split(' ') ?? [];
+  for (const t of linked) t.classList.toggle('is-lit', refs(t).some((k) => keys.includes(k)));
+  for (const svg of document.querySelectorAll('svg')) svg.classList.toggle('has-lit', !!svg.querySelector('.is-lit'));
+};
+for (const el of linked) {
+  el.addEventListener('pointerenter', () => { hovered = el; paint(); });
+  el.addEventListener('pointerleave', () => { hovered = null; paint(); });
+  el.addEventListener('focus', () => { focused = el; paint(); });
+  el.addEventListener('blur', () => { focused = null; paint(); });
+}
+
+// Stepper / scene player. Range and Play are optional: a plain stepper needs only data-go buttons.
+for (const root of document.querySelectorAll('.ve-steps')) {
+  const parts = [...root.querySelectorAll('[data-s]')], caps = [...root.querySelectorAll('.ve-cap li')];
+  const range = root.querySelector('input[type=range]'), play = root.querySelector('[data-play]');
+  const n = caps.length; let i = 0, timer = null;
+  if (range) range.max = n - 1;
+  const show = (k) => {
+    i = Math.max(0, Math.min(n - 1, k));
+    root.classList.remove('is-still');
+    // data-s lists the steps a part takes part in: it appears at the first ("0" = from the start) and is .now on each.
+    for (const el of parts) { const s = el.dataset.s.trim().split(' ').map(Number); el.classList.toggle('on', s[0] <= i + 1); el.classList.toggle('now', s.includes(i + 1)); }
+    caps.forEach((c, j) => c.hidden = j !== i);
+    root.classList.toggle('is-full', i === n - 1);
+    root.dispatchEvent(new Event('ve:step'));
+    if (range) range.value = i;
+  };
+  const stop = () => { clearInterval(timer); timer = null; if (play) play.textContent = 'Play'; };
+  root.addEventListener('click', (e) => { const b = e.target.closest('[data-go]'); if (b) { stop(); show(i + +b.dataset.go); } });
+  range?.addEventListener('input', () => { stop(); show(+range.value); });
+  play?.addEventListener('click', () => {
+    if (timer) return stop();
+    if (i === n - 1) show(0);
+    play.textContent = 'Pause';
+    timer = setInterval(() => (i < n - 1 ? show(i + 1) : stop()), 3500);
+  });
+  show(n - 1); // open on the full picture; Play replays from step 1
+  root.classList.add('is-still'); // same task as show(), so the last token never starts until the reader steps
+  addEventListener('beforeprint', () => { show(n - 1); root.classList.add('is-still'); }); // print shows the end state
+}
+
+if (!still) {
+  // Flow dots: each path[data-flow] spawns a dot every data-every ms; the ratio of intervals is the real traffic split.
+  // Runs only while the figure is on screen and, inside a stepper, only on the full picture.
+  for (const svg of document.querySelectorAll('svg:has([data-flow])')) {
+    const layer = svg.querySelector('.ve-dots'), steps = svg.closest('.ve-steps');
+    const routes = [...svg.querySelectorAll('[data-flow]')].map((p) => ({ p, len: p.getTotalLength(), every: +p.dataset.every, next: 0 }));
+    let dots = [], visible = false, running = false;
+    const live = () => visible && (!steps || steps.classList.contains('is-full'));
+    const tick = (t) => {
+      if (!live()) { running = false; for (const d of dots) d.c.remove(); dots = []; return; }
+      for (const r of routes) if (t >= r.next) {
+        r.next = t + r.every;
+        const c = document.createElementNS(svg.namespaceURI, 'circle');
+        c.setAttribute('r', 4); c.setAttribute('class', r.p.dataset.flow); layer.append(c);
+        dots.push({ c, r, t0: t });
+      }
+      dots = dots.filter((d) => {
+        const s = (t - d.t0) * .3; // 300 units per second
+        if (s > d.r.len) { d.c.remove(); return false; }
+        const pt = d.r.p.getPointAtLength(s);
+        d.c.setAttribute('cx', pt.x); d.c.setAttribute('cy', pt.y);
+        return true;
+      });
+      requestAnimationFrame(tick);
+    };
+    const start = () => { if (!running && live()) { running = true; requestAnimationFrame(tick); } };
+    steps?.addEventListener('ve:step', start);
+    new IntersectionObserver(([e]) => { visible = e.isIntersecting; start(); }).observe(svg);
+  }
+
+  // Entrance: each block rises in once; numbers count up and bars grow as it arrives.
+  // Without JS, in print, or under reduced motion, everything shows its final state.
+  document.documentElement.classList.add('js-motion');
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (!e.isIntersecting) continue;
+      io.unobserve(e.target); e.target.classList.add('in');
+      for (const el of e.target.querySelectorAll('[data-count]')) {
+        const end = +el.dataset.count, dp = (el.dataset.count.split('.')[1] || '').length, t0 = performance.now();
+        const step = (t) => {
+          const k = Math.min(1, (t - t0) / 900);
+          el.textContent = (end * (1 - (1 - k) ** 3)).toLocaleString('en-US', { minimumFractionDigits: dp, maximumFractionDigits: dp });
+          if (k < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+      }
+    }
+  }, { rootMargin: '0px 0px -10% 0px' });
+  for (const el of document.querySelectorAll('main > *')) io.observe(el);
+}
+
+// reader replies (kit/reply.js, inlined before this); a page opened raw has none
+window.veReply?.page();
+
+// Last statement: kit/look.mjs reads this to tell that the whole script ran.
+document.documentElement.dataset.veKit = "ready";
+}
+</script>
+</body>
+</html>
